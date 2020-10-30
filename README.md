@@ -14,12 +14,12 @@ Below are some screenshots showing a preview of the table created by the code in
 
 ## colors-table
 
-![](C:\Users\bstaton\Desktop\Staton\3_general\pdf-tables\zzz-img\colors-table-img.png)
+![](https://raw.githubusercontent.com/bstaton1/pdf-tables/main/zzz-img/colors-table-img.png)
 
 ## large-table
 
-![](C:\Users\bstaton\Desktop\Staton\3_general\pdf-tables\zzz-img\large-table-img.png)
+![](https://raw.githubusercontent.com/bstaton1/pdf-tables/main/zzz-img/large-table-img.png)
 
 ## math-table
 
-![](C:\Users\bstaton\Desktop\Staton\3_general\pdf-tables\zzz-img\math-table-img.png)
+![](https://raw.githubusercontent.com/bstaton1/pdf-tables/main/zzz-img/math-table-img.png)
