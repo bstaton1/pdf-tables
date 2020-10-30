@@ -1,0 +1,27 @@
+group,param,desc,footnote,eqns
+dims,$n_y$,Number of brood years; here 45,,
+dims,$n_t$,Number of calendar years for the population with the longest data time series; here 42,,
+dims,$n_j$,"Number of populations, here 13",,
+dims,$n_a$,Number of possible ages of maturation; here 4,,
+dims,$a_{\\text{min}}$,The first age recruits can mature; here 4,,
+dims,$a_{\\text{max}}$,The last age recruits can mature; here 7,,
+params,$\\alpha_j$,Maximum recruits per spawner for population $j$,,"1, 2"
+params,$\\beta_j$,Capacity parameter for population $j$,,"1, 2"
+params,$\\sigma^2_j$,White noise recruitment process variance for population $j$,,5
+params,"$\\rho_{i,j}$",Correlation in recruitment process variance between populations $i$ and $j$,,5
+params,$\\Sigma_R$,Recruitment white noise process covariance matrix ,,"3, 5"
+params,$\\phi$,Lag-1 serial autocorrelation coefficient,,4
+params,"$\\omega_{y,j}$",Serially autocorrelated portion of recruitment anomalies,,"3, 4"
+params,$\\pi_a$,Mean proportion of adult recruits that mature and return at age $a$,,6
+params,$D$,Dirichlet dispersion parameter for brood year-specific maturity schedules,a,6
+params,"$p_{y,a}$",Probability adult recruits from brood year $y$ mature at age $a$,a,"6, 7"
+params,$U_t$,Exploitation rate experienced by fully vulnerable populations in calendar year $t$,b,"10, 12"
+params,$v_j$,Relative vulnerability term for population $j$,b,"10, 12"
+states,"$\\dot{R}_{y,j}$",Deterministic (expected) recruitment in brood year $y$ for population $j$,,"1, 2, 3"
+states,"$R_{y,j}$",Realized latent (true) recruitment in brood year $y$ for population $j$,,"3, 7"
+states,"$N_{t,a,j}$",Age-structured run abundance returning to spawn in calendar year $t$ for population $j$,,7
+states,"$N_{t,j}$",Run abundance returning to spawn in calendar year $t$ for population $j$,,8
+states,"$S_{t,j}$",Spawner abundance in calendar year $t$ for population $j$,,"2, 12"
+states,"$H_{t,j}$",Harvest in calendar year $t$ for population $j$,,10
+states,$H_{t}$,Mixed-stock aggregate harvest in calendar year $t$,,11
+states,"$q_{t,a,j}$",Proportion of the run returning to population $j$ in year $t$ that is made up of age $a$,,9

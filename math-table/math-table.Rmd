@@ -1,0 +1,158 @@
+---
+title: "Example Table Summarizing Mathematical Symbology"
+author: "Produced by: Ben Staton"
+output: 
+  bookdown::pdf_document2:
+    toc: false
+fontfamily: mathpazo
+urlcolor: cyan
+linkcolor: cyan
+geometry: [top=0.5in,bottom=0.5in,left=0.75in,right=0.75in]
+header-includes:
+  - \usepackage[labelfont={bf,sc},labelsep=period]{caption}
+  - \captionsetup{width=\textwidth}
+---
+
+\pagenumbering{gobble}
+
+For this example, suppose you have a technical document with many equations and symbols.
+Of course, context would be provided for each equation and symbol in the text surrounding each equation, but it may be helpful for readers to have a table to summarize the symbology for them.
+
+The equations below are a subset from Staton _et al._ ([2020](https://cdnsciencepub.com/doi/abs/10.1139/cjfas-2019-0281)), and Table \@ref(tab:symbols) is adapted from Table 2 therein.
+These equations represent the process equations of a state-space model that is intended to simultaneously describe the dynamics of several salmon populations harvested as a mixed-stock.
+The quantities $S_{t,j}$, $H_{t}$ and $q_{t,a,j}$ are linked to observed data for estimation of unknown parameters and latent states: $\alpha_j$, $\beta_j$, $\phi$, $\Sigma_R$, $\pi_{1:n_a}$, $D$, $p_{y,a}$, $U_t$, and $R_{y,j}$.
+
+
+```{r symbols, echo = FALSE}
+library(magrittr) # for pipe operator
+
+# read in the raw table info
+tab = read.csv("math-table-input.csv", stringsAsFactors = F, allowEscapes = TRUE)
+
+# extract each column
+param = tab[,"param"]
+group = tab[,"group"]
+desc = tab[,"desc"]
+footnote = tab[,"footnote"]
+eqns = tab[,"eqns"]
+
+# format the eqns as cross references
+eqns = unlist(
+  lapply(eqns, function(x) {
+    eqn_nums = unlist(stringr::str_split(x, ", "))
+    if (!all(eqn_nums == "")) {
+      eqn_refs = paste0("\\ref{eq:eq-", eqn_nums, "}")
+      eqn_out = paste(eqn_refs, collapse = ", ")
+    } else {
+      eqn_out = ""
+    }
+    return(eqn_out)
+  })
+)
+
+# add footnote symbols where necessary
+param = ifelse(footnote != "", paste(param, "\\textsuperscript{", footnote, "}", sep = ""), param)
+
+# combine the columns into a table
+tab = cbind(param, desc, eqns)
+
+# format column names
+colnames(tab) = c("\\textbf{Symbol}", "\\textbf{Description}", "\\textbf{Eqns.}")
+
+# build the main kable
+knitr::kable(tab, format = "latex", booktabs = T,
+      linesep = "", escape = FALSE, align = "lll", 
+      caption = "Definition of the symbology used in the description of the state-space model equations.") %>%
+  
+  # make a couple changes to the format, especially disable any floating behavior
+  kableExtra::kable_styling(full_width = FALSE, latex_options = c("HOLD_position")) %>%
+  
+  # add grouped rows
+  kableExtra::pack_rows("Dimensional Constants", min(which(group == "dims")), max(which(group == "dims")), hline_after = TRUE) %>%
+  kableExtra::pack_rows("Parameters", min(which(group == "params")), max(which(group == "params")), hline_after = TRUE) %>%
+  kableExtra::pack_rows("States", min(which(group == "states")), max(which(group == "states")), hline_after = TRUE) %>%
+  
+  # add a footnote section
+  kableExtra::footnote(
+    alphabet = c(
+      "Used only in complex maturity models: SSM-vM and SSM-VM. For simple maturity models (SSM-vm and SSM-Vm), $p_{y,a}$ took the value $\\\\pi_a$.",
+      "In the default case, all populations were assumed to be fully vulnerable to harvest (i.e., all $v_j = 1$), $v_j$ was used in a sensitivity analysis to this assumption (see Online Supplement F)."
+    ),
+    escape = FALSE,
+    threeparttable = TRUE
+  )
+```
+
+\clearpage
+
+First $a_{\text{max}}$ brood years:
+
+\begin{equation}
+  \dot{R}_{y,j}=\frac{\log(\alpha_j)}{\beta_j}
+  (\#eq:eq-1)
+\end{equation}
+
+Brood years $a_{\text{max}}+1$ through $n_y$, where $t=y-a_{\text{max}}$:
+
+\begin{equation}
+  \dot{R}_{y,j} = \alpha_j S_{t,j} e^{-\beta_j S_{t,j}}
+  (\#eq:eq-2)
+\end{equation}
+
+\begin{equation}
+  \log(R_{y,1:n_j}) \sim \text{MVN}\left(\log(\dot{R}_{y,1:n_j}) + \omega_{y,1:n_j}, \Sigma_R\right)
+  (\#eq:eq-3)
+\end{equation}
+
+\begin{equation}
+  \omega_{y,1:n_j} = \phi \left(\log(R_{y-1,1:n_j}) - \log(\dot{R}_{y-1,1:n_j}) \right)
+  (\#eq:eq-4)
+\end{equation}
+
+\begin{equation}
+  \Sigma_R=
+  \left[ {\begin{array}{cccc}
+  \sigma_{1}^2 & \sigma_{1}\sigma_{2}\rho_{1,2}  & \cdots & \sigma_{1}\sigma_{n_j}\rho_{1,n_j}\\
+  \sigma_{2}\sigma_{1}\rho_{2,1} & \sigma_{2}^2 & \cdots  & \sigma_{2}\sigma_{n_j}\rho_{2,n_j}\\
+  \vdots & \vdots  & \ddots & \vdots\\
+  \sigma_{n_j}\sigma_{1}\rho_{n_j,1} & \sigma_{n_j}\sigma_{2}\rho_{n_j,2} &  \cdots & \sigma_{n_j}^2\\
+  \end{array} } \right]
+  (\#eq:eq-5)
+\end{equation}
+
+\begin{equation}
+  p_{y,a} \stackrel{\text{iid}}{\sim} \text{Dirichlet}(\pi_{1:n_a} \cdot D)
+  (\#eq:eq-6)
+\end{equation}
+
+\begin{equation}
+  N_{t,a,j} = R_{t+n_a-a,j} p_{t+n_a-a,a}
+  (\#eq:eq-7)
+\end{equation}
+
+\begin{equation}
+  N_{t,j}=\sum_{a=1}^{n_a} N_{t,a,j}
+  (\#eq:eq-8)
+\end{equation}
+
+\begin{equation}
+  q_{t,a,j} = \frac{N_{t,a,j}}{N_{t,j}}
+  (\#eq:eq-9)
+\end{equation}
+
+\begin{equation}
+  H_{t,j}=N_{t,j} U_t v_j
+  (\#eq:eq-10)
+\end{equation}
+
+\begin{equation}
+  H_{t}=\sum_{j=1}^{n_j} H_{t,j}
+  (\#eq:eq-11)
+\end{equation}
+
+\begin{equation}
+  S_{t,j}=N_{t,j} (1 - U_t v_j)
+  (\#eq:eq-12)
+\end{equation}
+
+**Side note**: the manuscript from which this content was adapted was prepared using the 'bookdown' package, which produces a `.tex` file containing, among the rest of the manuscript content, the \LaTeX \space code to reproduce this table. The journal was able to use this output to build the table for publication.
