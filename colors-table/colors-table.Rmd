@@ -1,0 +1,62 @@
+---
+title: "Example Table with Select Cells Shaded"
+author: "Produced by: Ben Staton"
+output: 
+  bookdown::pdf_document2:
+    toc: false
+fontfamily: mathpazo
+urlcolor: cyan
+linkcolor: cyan
+geometry: [top=0.5in,bottom=0.5in,left=0.75in,right=0.75in]
+header-includes:
+  - \usepackage[labelfont={bf,sc},labelsep=period]{caption}
+  - \captionsetup{width=\textwidth}
+---
+
+\pagenumbering{gobble}
+
+This example comes from a manuscript currently in preparation, but I really like it, so I thought it worthy of including here.
+Interested readers who have viewed the math symbology table example might find this description of the difference between $t$ and $y$ year indices useful.
+
+```{r table, echo = FALSE}
+library(magrittr) # for pipe operator
+
+# read in the raw input table
+tab = read.csv("colors-table-input.csv", stringsAsFactors = FALSE, allowEscapes = TRUE)
+
+# replace "\\n" with "\n": for kableExtra::linebreak()
+tab = apply(tab, 2, function(x) stringr::str_replace(x, "\\\\n", "\\\n"))
+
+# add line breaks to necessary cells
+tab = apply(tab, 2, function(x) kableExtra::linebreak(x, align = "c"))
+
+# set the color for cells not considered by model
+tab[tab == "color"] = kableExtra::cell_spec(" ", format = "latex", background = "#D3D3D3")
+
+# pretty latex column names
+colnames(tab) = c("\\textbf{Year}", "$\\boldsymbol{y}$","$\\boldsymbol{t}$", "\\textbf{Age-4}\n($a=1$)",	"\\textbf{Age-5}\n($a=2$)",	"\\textbf{Age-6}\n($a=3$)",	"\\textbf{Age-7}\n($a=4$)")
+colnames(tab) = kableExtra::linebreak(colnames(tab), align = "c")
+
+# specify the caption
+cap = "Structure of the brood and calendar year indexing in the state-space model spawner-recruit model.
+  The brood year $y$ in which salmon returning in calendar year $t$ at age $a$ were spawned is calculated as $y = t + n_a - a$.
+  Grey regions are years that are not included in model calculations. 
+  Note that in order to have model-predicted age-structured return in $t = 1$ for fitting to data observed that year, 
+  $a_{\\text{max}}$ brood years before $t = 1$ must be included (larger grey region). 
+  Similarly, even though escapement data span until 2019, the model does not track recruitment states after 2015
+  because no adults had yet been observed from later brood years (smaller grey region).
+  "
+
+# build/format the table
+knitr::kable(tab, "latex", booktabs = TRUE, longtable = FALSE, linesep = "", escape = FALSE, align = "ccccccc", caption = cap) %>%
+  
+  # misc settings
+  kableExtra::kable_styling(full_width = FALSE, latex_options = "HOLD_position") %>%
+  
+  # add a grouped column header
+  kableExtra::add_header_above(c("Year Indices" = 3, "Brood Year of Returning Adults in $\\\\boldsymbol{t}$" = 4), bold = TRUE, escape = FALSE)
+```
+
+As an example of how to interpret this table, adult salmon returning in calendar year $t = 44$ (2019) at age-6 were the progeny of spawners returning in brood year $y = 45$ (2013).
+
+_P.S.: If anyone knows how to get rid of the (barely visible, but very annoying) white cell boundaries in the grey regions, I would be very appreciative of a solution. I spent excessively too long searching for a solution but was unsuccessful._
