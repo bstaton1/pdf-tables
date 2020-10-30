@@ -1,0 +1,100 @@
+---
+title: "Example Large Multi-page Table"
+author: "Produced by: Ben Staton"
+output: 
+  bookdown::pdf_document2:
+    toc: false
+fontfamily: mathpazo
+urlcolor: cyan
+linkcolor: cyan
+geometry: [top=0.5in,bottom=0.5in,left=0.75in,right=0.75in]
+header-includes:
+  - \usepackage[labelfont={bf,sc},labelsep=period]{caption}
+  - \captionsetup{width=\textwidth}
+---
+
+\pagenumbering{gobble}
+
+This example is adapted from Table 5 in Staton ([2018](https://www.fws.gov/uploadedFiles/2018KuskokwimRiverSalmonSubsistenceHarvestReport.pdf)) -- a report documenting in-season harvest and effort estimates and associated methodology.
+That report was prepared with 'bookdown' using a custom template.
+
+```{r table, echo = FALSE}
+library(magrittr) # for pipe operator
+
+# read in the input information
+tab = read.csv("large-table-input.csv", stringsAsFactors = FALSE)
+
+# specify the caption
+cap = "Salmon harvest from drift nets from all five openers by species and geographic stratum\\textsuperscript{1}. Numbers within parentheses are 95\\% confidence limits\\textsuperscript{a,b}."
+
+# function to add a break to the numeric columns
+add_break = function(x) {
+  stringr::str_replace(x, "\\(", "\n(") %>%
+    kableExtra::linebreak(align = "c")
+}
+
+# add the line breaks
+tab_break = apply(tab[,c("A", "B", "C", "D1", "total")], 2, add_break)
+
+# replace the old columns (without breaks) with the new ones (with breaks)
+tab[,c("A", "B", "C", "D1", "total")] = tab_break
+
+# format species names as italic
+tab$spp = paste("\\textit{", tab$spp, "}", sep = "")
+
+# specify the column names
+col.names = paste("\\textbf{", c("Species", "A", "B", "C", "D", "Total"), "}", sep = "")
+
+# format the dates
+dates = tab$date
+dates_split = stringr::str_split(dates, "-")
+dates = unlist(
+  lapply(dates_split, function(x) {
+  x[2] = ifelse(x[2] == "Jun", 6, ifelse(x[2] == "Jul", 7, NA))
+  formatted = paste0(x[2], "/", x[1], "/", "2018")
+  formatted = ifelse(formatted == "NA/NA/2018", "All Openers", formatted)
+  formatted
+})
+)
+tab$date = dates
+
+# extract the unique dates
+udates = unique(dates)
+
+# build/format the table
+knitr::kable(tab[,-1], "latex", booktabs = TRUE, escape = FALSE, longtable = TRUE, row.names = FALSE,
+      col.names = col.names, align = "lccccc",
+      caption = cap) %>%
+  
+  # misc settings
+  kableExtra::kable_styling(full_width = F, latex_options = c("repeat_header")) %>%
+  
+  # add grouped column header
+  kableExtra::add_header_above(c(" " = 1, "Geographic Stratum$^1$" = 4, " " = 1), bold = T, escape = FALSE) %>%
+  
+  # group rows by date
+  kableExtra::pack_rows(udates[1], 1, 4, escape = F, latex_gap_space = "0.6em") %>%
+  kableExtra::pack_rows(udates[2], 5, 8, escape = F, hline_before = TRUE, latex_gap_space = "1em") %>%
+  kableExtra::pack_rows(udates[3], 9, 12, escape = F, hline_before = TRUE, latex_gap_space = "1em") %>%
+  kableExtra::pack_rows(udates[4], 13, 16, escape = F, hline_before = TRUE, latex_gap_space = "1em") %>%
+  kableExtra::pack_rows(udates[5], 17, 20, escape = F, hline_before = FALSE, latex_gap_space = "1em") %>%
+  kableExtra::pack_rows(udates[6], 21, 24, escape = F, hline_before = TRUE, latex_gap_space = "1em") %>%
+  
+  # build the footnote section
+  kableExtra::footnote(
+    number_title = "Geographic Strata", 
+    alphabet_title = "Confidence Limits", 
+    general_title = "Note", 
+    title_format = c("bold", "underline"), fixed_small_size = TRUE,
+    number = "A = Below Johnson River, B = Johnson River to Napaskiak, C = Napaskiak to Akiachak, D = Akiachak to Akiak",
+    alphabet = c(
+      "Total means and 95% confidence limits within an opener were obtained via non-parametric bootstrap.",
+      "Total means and 95% confidence limits across openers are the sum of opener-specific estimates."
+    ),
+    general = c(
+      "All estimates rounded to the nearest 10 fish.",
+      "Totals were rounded to the nearest 10 fish after calculating the sum of non-rounded estimates. As a result, the total presented in this table may differ by approximately 10 -- 20 fish from the total obtained by summing the rounded estimates."),
+    threeparttable = TRUE
+  )
+
+```
